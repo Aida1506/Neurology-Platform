@@ -6,6 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @CrossOrigin(origins = "http://localhost:3000") // permite request-uri din React
 @RestController
 @RequestMapping("/api/auth")
@@ -54,18 +57,34 @@ public class AuthController {
             );
 
             if (result != null && result > 0) {
-                return ResponseEntity.ok("{\"status\":\"success\",\"message\":\"Login successful\"}");
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "Login successful");
+
+                // trimite și userul (ca să-l salvezi în localStorage)
+                Map<String, Object> userData = new HashMap<>();
+                userData.put("username", user.getUsername());
+                userData.put("role", user.getRole() != null ? user.getRole() : "PACIENT");
+                response.put("user", userData);
+
+                return ResponseEntity.ok(response);
             } else {
-                return ResponseEntity
-                        .status(HttpStatus.UNAUTHORIZED)
-                        .body("{\"status\":\"error\",\"message\":\"Invalid credentials\"}");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of(
+                                "success", false,
+                                "message", "Invalid credentials"
+                        ));
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body("{\"status\":\"error\",\"message\":\"Login failed: " + e.getMessage() + "\"}");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                            "success", false,
+                            "message", "Login failed: " + e.getMessage()
+                    ));
         }
     }
+
+
 }

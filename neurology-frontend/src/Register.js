@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import "./Register.css";
+import registerTitle from "./register_title.png";
 
 function Register() {
   const [username, setUsername] = useState("");
@@ -26,7 +28,7 @@ function Register() {
 
   return (
     <div className="login-container">
-      <h2>Register</h2>
+      <img src={registerTitle} alt="Register" className="register-title" />
       <input
         placeholder="Username"
         value={username}
@@ -45,7 +47,7 @@ function Register() {
       <button onClick={handleRegister}>Register</button>
       {message && <p>{message}</p>}
       <p>
-        Already have an account? <Link to="/">Login here</Link>
+        Already have an account? <Link to="/login">Login here</Link>
       </p>
     </div>
   );

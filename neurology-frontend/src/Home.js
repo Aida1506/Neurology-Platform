@@ -1,52 +1,36 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../assets/my-logo.png"; // pune aici imaginea ta
+import logo from "./logo.png";
+import loginButton from "./login_button.png";
+import registerButton from "./register_button.png";
+import "./Home.css";
 
 function Home() {
   const navigate = useNavigate();
 
   return (
     <div style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      height: "100vh",
-      backgroundColor: "#f0f4f8",
-      textAlign: "center"
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "linear-gradient(135deg, #2196F3, #4CAF50)",
+        textAlign: "center"
     }}>
-      <img src={logo} alt="App Logo" style={{ width: "150px", marginBottom: "40px" }} />
-      <h1>Welcome to Neurology App</h1>
-      <div style={{ marginTop: "30px" }}>
-        <button
-          onClick={() => navigate("/login")}
-          style={{
-            marginRight: "20px",
-            padding: "10px 20px",
-            fontSize: "16px",
-            borderRadius: "5px",
-            border: "none",
-            cursor: "pointer",
-            backgroundColor: "#4CAF50",
-            color: "white"
-          }}
-        >
-          Login
-        </button>
-        <button
-          onClick={() => navigate("/register")}
-          style={{
-            padding: "10px 20px",
-            fontSize: "16px",
-            borderRadius: "5px",
-            border: "none",
-            cursor: "pointer",
-            backgroundColor: "#2196F3",
-            color: "white"
-          }}
-        >
-          Register
-        </button>
+      <img src={logo} alt="App Logo" style={{ width: "900px" }} />
+      <div style={{  display: "flex",  gap: "20px", flexWrap: "wrap"}}>
+        <img
+            className="button-image"
+           src={loginButton}
+           alt="Login"
+           onClick={() => navigate("/login")}
+        />
+        <img
+           className="button-image"
+           src={registerButton}
+           alt="Register"
+           onClick={() => navigate("/register")}
+        />
       </div>
     </div>
   );

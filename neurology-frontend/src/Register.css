@@ -5,66 +5,61 @@ body {
   background: linear-gradient(135deg, #74ebd5, #ACB6E5);
   height: 100vh;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-}
-
-/* Card container for login/register */
-.card-container {
-  background-color: #fff;
-  padding: 40px 30px;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  width: 350px;
   text-align: center;
-  transition: transform 0.2s ease-in-out;
 }
 
-.card-container:hover {
-  transform: translateY(-5px);
-}
-
-/* Titles */
-.card-container h2 {
-  margin-bottom: 25px;
-  color: #333;
+/* Logo / Title */
+.register-title {
+    width: 500px;
+    max-width: 80%;
+    margin-bottom: 50px;
 }
 
 /* Inputs and select */
-.card-container input,
-.card-container select {
+input,
+select {
   width: 100%;
   padding: 12px 15px;
   margin-bottom: 15px;
   border-radius: 8px;
   border: 1px solid #ccc;
   outline: none;
-  font-size: 14px;
+  font-size: 15px;
+  line-height: 1.5; /* asigură înălțimea uniformă */
+  box-sizing: border-box; /* include padding + border în width */
   transition: 0.2s;
+  appearance: none; /* opțional, pentru a elimina stilul nativ în unele browsere */
 }
 
-.card-container input:focus,
-.card-container select:focus {
+input:focus,
+select:focus {
   border-color: #74ebd5;
-  box-shadow: 0 0 5px #74ebd5;
+  box-shadow: 0 0 8px rgba(116, 235, 213, 0.7);
 }
 
 /* Buttons */
-.card-container button {
+button {
+  display: block;
   width: 100%;
+  max-width: 100%;
   padding: 12px;
-  margin-top: 10px;
+  margin: 15px 0;
   border: none;
   border-radius: 8px;
-  background: #74ebd5;
+  background: linear-gradient(135deg, #74ebd5, #67d4c8);
   color: #fff;
   font-size: 16px;
+  font-weight: bold;
   cursor: pointer;
   transition: 0.3s;
 }
 
-.card-container button:hover {
-  background: #67d4c8;
+button:hover {
+  background: linear-gradient(135deg, #67d4c8, #4bbfa7);
+  transform: scale(1.02);
 }
 
 /* Links */
@@ -75,12 +70,8 @@ body {
 
 .card-container p a {
   color: #74ebd5;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.card-container p a:hover {
   text-decoration: underline;
+  font-weight: bold;
 }
 
 /* Message */

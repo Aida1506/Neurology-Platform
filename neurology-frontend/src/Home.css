@@ -1,0 +1,15 @@
+.button-image {
+  width: 600px;
+  border: none;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: transparent;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.button-image:hover {
+  transform: scale(1.1);
+  opacity: 0.8;
+}
