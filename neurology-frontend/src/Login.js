@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom"; // <-- import useNavigate
-import "./Login.css";
 import loginTitle from "./login_title.png";
 
 function Login() {
@@ -32,25 +31,48 @@ function Login() {
   };
 
   return (
-    <div className="login-container">
-      <img src={loginTitle} alt="Login" className="login-title" />
-      <input
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <input
-        placeholder="Password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button onClick={handleLogin}>Login</button>
-      {message && <p className="message">{message}</p>}
-      <p>
-        Don't have an account? <Link to="/register">Register here</Link>
-      </p>
-    </div>
+      <div className="min-h-screen bg-gradient-to-br from-teal-300 to-blue-200 flex items-center justify-center p-6">
+          {/* Card alb */}
+          <div className="bg-white rounded-xl shadow-lg p-10 w-full max-w-2xl">
+              {/* Logo / Title */}
+              <h1 className="text-5xl font-extrabold text-teal-600 mb-8 text-center font-sans">
+                  Login
+              </h1>
+
+              <input
+                  placeholder="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full p-3 mb-4 rounded-lg border border-gray-300 focus:border-teal-400 focus:ring-2 focus:ring-teal-300 outline-none"
+              />
+
+              <input
+                  placeholder="Password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full p-3 mb-4 rounded-lg border border-gray-300 focus:border-teal-400 focus:ring-2 focus:ring-teal-300 outline-none"
+              />
+
+              <button
+                  onClick={handleLogin}
+                  className="w-full p-3 mb-4 bg-gradient-to-br from-teal-300 to-teal-400 text-white font-bold rounded-lg hover:from-teal-400 hover:to-teal-500 transform hover:scale-105 transition"
+              >
+                  Login
+              </button>
+
+              {message && (
+                  <p className="text-red-600 font-semibold mb-4">{message}</p>
+              )}
+
+              <p className="text-sm text-center">
+                  Already have an account?{" "}
+                  <Link to="/register" className="text-teal-500 underline font-bold">
+                      Register here
+                  </Link>
+              </p>
+          </div>
+      </div>
   );
 }
 
