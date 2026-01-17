@@ -60,7 +60,7 @@ public class DashboardController {
         List<Map<String, Object>> symptoms = jdbcTemplate.queryForList(
                 "SELECT id, date, symptom, severity " +
                         "FROM symptoms " +
-                        "WHERE username = ? " +
+                        "WHERE username = ? AND DATE(date) = CURDATE() " +
                         "ORDER BY date DESC, id DESC",
                 username
         );

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import registerTitle from "./register_title.png";
 
 function Register() {
     const [username, setUsername] = useState("");

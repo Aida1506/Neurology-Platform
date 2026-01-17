@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom"; // <-- import useNavigate
-import loginTitle from "./login_title.png";
 
 function Login() {
   const [username, setUsername] = useState("");
