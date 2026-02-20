@@ -13,7 +13,8 @@ const evolutieData = [
 ];
 
 function Profile() {
-    const user = JSON.parse(localStorage.getItem("user")) || { username: "Guest" };
+    const storedUser = localStorage.getItem("user");
+    const user = storedUser ? JSON.parse(storedUser) : null;
     const [currentTime, setCurrentTime] = useState(new Date());
     const [selectedMonth, setSelectedMonth] = useState(currentTime.getMonth());
     const [selectedDay, setSelectedDay] = useState(currentTime.getDate());

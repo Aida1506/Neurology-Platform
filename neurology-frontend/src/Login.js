@@ -18,6 +18,7 @@ function Login() {
 
       // dacă loginul a fost valid
       if (res.data.success) { // presupunem că backend trimite success = true
+          localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user)); // salvezi datele userului
         navigate("/profile"); // <-- redirecționează către pagina de profil
       } else {
