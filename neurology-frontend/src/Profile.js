@@ -68,6 +68,21 @@ function Profile() {
 
                 {/* Good day panel */}
                 <div className="bg-white rounded-2xl shadow p-6 flex flex-col items-start">
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-800">
+                            Analiză AI imagistică
+                        </h3>
+                        <p className="text-gray-500 text-sm">
+                            Încarcă o imagine pentru predicție și GradCAM
+                        </p>
+                    </div>
+
+                    <button
+                        onClick={() => window.location.href = "/ai"}
+                        className="px-6 py-3 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition font-semibold"
+                    >
+                        Deschide AI
+                    </button>
                     <h2 className="text-2xl font-bold">Good day, {user.username}!</h2>
                     <p className="text-gray-500 mt-1">
                         {currentTime.toLocaleDateString()} | {currentTime.toLocaleTimeString()}

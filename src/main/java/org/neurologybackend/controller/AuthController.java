@@ -1,6 +1,7 @@
-package org.example.controller;
+package org.neurologybackend.controller;
 
-import org.example.model.User;
+import org.neurologybackend.model.User;
+import org.neurologybackend.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,77 +15,20 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final AuthService authService;
 
-    public AuthController(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
-        System.out.println("📩 Received user: " + user.getUsername() + " / " + user.getPassword() + " / " + user.getRole());
-
-        if (user.getRole() == null || user.getRole().isEmpty()) {
-            user.setRole("PACIENT"); // default role
-        }
-
-        try {
-            jdbcTemplate.update("CALL register_user(?, ?, ?)",
-                    user.getUsername(),
-                    user.getPassword(),
-                    user.getRole());
-
-            // return JSON cu status 200 OK
-            return ResponseEntity.ok("{\"status\":\"success\",\"message\":\"User registered successfully\"}");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            // return JSON cu status 400 Bad Request și mesaj de eroare
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body("{\"status\":\"error\",\"message\":\"Registration failed: " + e.getMessage() + "\"}");
-        }
+        return authService.register(user);
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
-        try {
-            Integer result = jdbcTemplate.queryForObject(
-                    "CALL login_user(?, ?)",
-                    Integer.class,
-                    user.getUsername(),
-                    user.getPassword()
-            );
-
-            if (result != null && result > 0) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", true);
-                response.put("message", "Login successful");
-
-                // trimite și userul (ca să-l salvezi în localStorage)
-                Map<String, Object> userData = new HashMap<>();
-                userData.put("username", user.getUsername());
-                userData.put("role", user.getRole() != null ? user.getRole() : "PACIENT");
-                response.put("user", userData);
-
-                return ResponseEntity.ok(response);
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of(
-                                "success", false,
-                                "message", "Invalid credentials"
-                        ));
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of(
-                            "success", false,
-                            "message", "Login failed: " + e.getMessage()
-                    ));
-        }
+        return authService.login(user);
     }
-
-
 }
+

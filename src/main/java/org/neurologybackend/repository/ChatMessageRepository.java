@@ -1,4 +1,8 @@
 package org.neurologybackend.repository;
 
-public class ChatMessageRepository {
+import org.neurologybackend.model.ChatMessage;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
 }
+
