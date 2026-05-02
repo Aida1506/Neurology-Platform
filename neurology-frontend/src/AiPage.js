@@ -3,18 +3,22 @@ import axios from "axios";
 
 function AiPage() {
     const [file, setFile] = useState(null);
+    const [preview, setPreview] = useState(null);
     const [result, setResult] = useState(null);
     const [gradcam, setGradcam] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    // 🔹 Predict
-    const handlePredict = async () => {
-        console.log("PREDICT CLICKED");
-        console.log("FILE:", file);
-        if (!file) {
-            alert("Selectează o imagine!");
-            return;
+    const handleFileChange = (e) => {
+        const selected = e.target.files[0];
+        setFile(selected);
+
+        if (selected) {
+            setPreview(URL.createObjectURL(selected));
         }
+    };
+
+    const handlePredict = async () => {
+        if (!file) return alert("Selectează o imagine!");
 
         const formData = new FormData();
         formData.append("file", file);
@@ -24,12 +28,21 @@ function AiPage() {
 
             const response = await axios.post(
                 "http://localhost:8080/api/dashboard/ai/predict",
-                formData
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data"
+                    }
+                }
             );
 
+            console.log("RESPONSE:", response.data); // 🔥 debug
+
             setResult(response.data);
+
         } catch (err) {
-            console.error(err);
+            console.error("PREDICT ERROR:", err.response || err.message);
+            alert("Predict failed");
         } finally {
             setLoading(false);
         }
@@ -37,10 +50,7 @@ function AiPage() {
 
     // 🔹 GradCAM
     const handleGradcam = async () => {
-        if (!file) {
-            alert("Selectează o imagine!");
-            return;
-        }
+        if (!file) return alert("Selectează o imagine!");
 
         const formData = new FormData();
         formData.append("file", file);
@@ -53,13 +63,10 @@ function AiPage() {
                 formData
             );
 
-            // 🔥 backend returnează base64
-            const imageBase64 = response.data.image;
-
-            setGradcam("data:image/jpeg;base64," + imageBase64);
+            setGradcam("data:image/jpeg;base64," + response.data.image);
 
         } catch (err) {
-            console.error("GRADCAM ERROR:", err);
+            console.error(err);
             alert("GradCAM failed");
         } finally {
             setLoading(false);
@@ -67,55 +74,92 @@ function AiPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col items-center p-10">
+        <div className="min-h-screen bg-gradient-to-br from-purple-100 to-blue-100 flex flex-col items-center p-10">
 
-            <h1 className="text-3xl font-bold mb-6 text-purple-600">
-                Analiză AI imagistică
-            </h1>
+            <div className="flex flex-col items-center mb-8 gap-4">
 
-            {/* Upload */}
-            <input
-                type="file"
-                onChange={(e) => setFile(e.target.files[0])}
-                className="mb-4"
-            />
-
-            {/* Buttons */}
-            <div className="flex gap-4 mb-6">
-                <button
-                    onClick={handlePredict}
-                    className="px-6 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600"
-                >
-                    Predict
-                </button>
+                <h1 className="text-4xl font-bold text-purple-700">
+                    🤖 AI Image Analysis
+                </h1>
 
                 <button
-                    onClick={handleGradcam}
-                    className="px-6 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600"
+                    onClick={() => window.location.href = "/ai-gallery"}
+                    className="px-6 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow"
                 >
-                    GradCAM
+                    🧠 Vezi istoric AI
                 </button>
+
             </div>
 
-            {/* Loading */}
-            {loading && <p className="text-gray-600">Se procesează...</p>}
+            {/* MAIN CARD */}
+            <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-4xl flex flex-col gap-6">
 
-            {/* Result */}
-            {result && (
-                <div className="bg-white p-6 rounded-xl shadow mb-6">
-                    <h2 className="font-bold mb-2">Rezultat AI:</h2>
-                    <pre>{JSON.stringify(result, null, 2)}</pre>
+                {/* Upload */}
+                <div className="flex flex-col items-center gap-4">
+                    <label className="cursor-pointer bg-purple-500 text-white px-6 py-3 rounded-xl hover:bg-purple-600 transition">
+                        Upload Image
+                        <input type="file" hidden onChange={handleFileChange} />
+                    </label>
+
+                    {preview && (
+                        <img
+                            src={preview}
+                            alt="preview"
+                            className="max-h-64 rounded-xl shadow"
+                        />
+                    )}
                 </div>
-            )}
 
-            {/* GradCAM */}
-            {gradcam && (
-                <div className="bg-white p-6 rounded-xl shadow">
-                    <h2 className="font-bold mb-2">GradCAM:</h2>
-                    <img src={gradcam} alt="gradcam" className="max-w-md rounded-lg" />
+                {/* Buttons */}
+                <div className="flex justify-center gap-6">
+                    <button
+                        onClick={handlePredict}
+                        className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:scale-105 transition shadow"
+                    >
+                        🔍 Predict
+                    </button>
+
+                    <button
+                        onClick={handleGradcam}
+                        className="px-6 py-3 bg-green-500 text-white rounded-xl hover:scale-105 transition shadow"
+                    >
+                        🔥 GradCAM
+                    </button>
                 </div>
-            )}
 
+                {/* Loading */}
+                {loading && (
+                    <p className="text-center text-gray-600 animate-pulse">
+                        Se procesează imaginea...
+                    </p>
+                )}
+
+                {/* Result */}
+                {result && (
+                    <div className="bg-gray-50 p-4 rounded-xl">
+                        <h2 className="font-bold mb-2 text-purple-600">
+                            Rezultat AI
+                        </h2>
+                        <pre className="text-sm">
+                            {JSON.stringify(result, null, 2)}
+                        </pre>
+                    </div>
+                )}
+
+                {/* GradCAM */}
+                {gradcam && (
+                    <div className="flex flex-col items-center">
+                        <h2 className="font-bold mb-2 text-green-600">
+                            GradCAM
+                        </h2>
+                        <img
+                            src={gradcam}
+                            alt="gradcam"
+                            className="rounded-xl shadow max-h-80"
+                        />
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

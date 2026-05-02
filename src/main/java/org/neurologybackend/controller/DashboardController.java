@@ -1,5 +1,7 @@
 package org.neurologybackend.controller;
 
+import org.neurologybackend.model.AiImage;
+import org.neurologybackend.model.Appointment;
 import org.neurologybackend.model.Symptom;
 import org.neurologybackend.service.AiService;
 import org.neurologybackend.service.DashboardService;
@@ -8,7 +10,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.neurologybackend.repository.AiImageRepository;
+import org.neurologybackend.service.AppointmentService;
 
+import java.util.List;
 import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:3000")
@@ -18,16 +23,16 @@ public class DashboardController {
 
     private final DashboardService dashboardService;
     private final AiService aiService;
+    private final AiImageRepository aiImageRepository;
+    private final AppointmentService appointmentService;
 
-    public DashboardController(DashboardService dashboardService, AiService aiService) {
+    public DashboardController(DashboardService dashboardService, AiService aiService, AiImageRepository aiImageRepository, AppointmentService appointmentService) {
         this.dashboardService = dashboardService;
         this.aiService = aiService;
+        this.aiImageRepository = aiImageRepository;
+        this.appointmentService = appointmentService;
     }
 
-    @GetMapping("/analysis/{username}")
-    public ResponseEntity<?> getAnalysis(@PathVariable String username) {
-        return ResponseEntity.ok(dashboardService.getAnalyses(username));
-    }
 
     @PostMapping("/symptoms/add")
     public ResponseEntity<?> addSymptom(@RequestBody Symptom symptom) {
@@ -37,11 +42,6 @@ public class DashboardController {
     @GetMapping("/symptoms/{username}")
     public ResponseEntity<?> getSymptoms(@PathVariable String username) {
         return ResponseEntity.ok(dashboardService.getTodaySymptoms(username));
-    }
-
-    @GetMapping("/devices/{username}")
-    public ResponseEntity<?> getDevices(@PathVariable String username) {
-        return ResponseEntity.ok(dashboardService.getDeviceData(username));
     }
 
     @PostMapping("/chat/{username}")
@@ -56,9 +56,14 @@ public class DashboardController {
             byte[] bytes = file.getBytes();
             String result = aiService.predict(bytes);
 
+            // 🔥 SALVEZI AICI
+            aiService.saveResult(file.getOriginalFilename(), result, bytes);
+
             return ResponseEntity.ok(result);
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
         }
     }
 
@@ -77,6 +82,32 @@ public class DashboardController {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(e.getMessage());
         }
+    }
+
+    @GetMapping("/ai/image/{id}")
+    public ResponseEntity<byte[]> getImage(@PathVariable Long id) {
+
+        AiImage img = aiImageRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Not found"));
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG)
+                .body(img.getImageData());
+    }
+
+    @GetMapping("/ai/history")
+    public ResponseEntity<?> getHistory() {
+        return ResponseEntity.ok(aiImageRepository.findAll());
+    }
+
+    @PostMapping("/appointments")
+    public Appointment create(@RequestBody Appointment a) {
+        return appointmentService.create(a);
+    }
+
+    @GetMapping("/appointments/{username}")
+    public List<Appointment> get(@PathVariable String username) {
+        return appointmentService.getForUser(username);
     }
 }
 
