@@ -1,7 +1,6 @@
 package org.neurologybackend.model;
 
 import jakarta.persistence.*;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -12,12 +11,14 @@ public class AiImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
     private String filename;
 
-    private String username;
+    @ManyToOne
+    private User patient;
 
-    @Setter
+    @ManyToOne
+    private User doctor;
+
     @Lob
     private String resultJson;
 
@@ -25,48 +26,123 @@ public class AiImage {
     @Column(columnDefinition = "LONGBLOB")
     private byte[] imageData;
 
-    @Column(nullable = false)
+    private boolean approved;
+
+    private boolean rejected;
+
+    private String doctorComment;
+
+    private Double confidence;
+
+    private String disease;
+
     private LocalDateTime createdAt;
 
-    // 🔥 IMPORTANT: se setează automat la salvare
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = LocalDateTime.now();
-    }
+    private LocalDateTime approvedAt;
 
-    // 🔹 GETTERS
+    // GETTERS & SETTERS
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getFilename() {
         return filename;
     }
 
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    public User getPatient() {
+        return patient;
+    }
+
+    public void setPatient(User patient) {
+        this.patient = patient;
+    }
+
+    public User getDoctor() {
+        return doctor;
+    }
+
+    public void setDoctor(User doctor) {
+        this.doctor = doctor;
+    }
+
     public String getResultJson() {
         return resultJson;
+    }
+
+    public void setResultJson(String resultJson) {
+        this.resultJson = resultJson;
     }
 
     public byte[] getImageData() {
         return imageData;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public LocalDateTime getCreatedAt() { // 🔥 LIPSEA
-        return createdAt;
-    }
-
-    // 🔹 SETTERS
-
     public void setImageData(byte[] imageData) {
         this.imageData = imageData;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public boolean isApproved() {
+        return approved;
+    }
+
+    public void setApproved(boolean approved) {
+        this.approved = approved;
+    }
+
+    public boolean isRejected() {
+        return rejected;
+    }
+
+    public void setRejected(boolean rejected) {
+        this.rejected = rejected;
+    }
+
+    public String getDoctorComment() {
+        return doctorComment;
+    }
+
+    public void setDoctorComment(String doctorComment) {
+        this.doctorComment = doctorComment;
+    }
+
+    public Double getConfidence() {
+        return confidence;
+    }
+
+    public void setConfidence(Double confidence) {
+        this.confidence = confidence;
+    }
+
+    public String getDisease() {
+        return disease;
+    }
+
+    public void setDisease(String disease) {
+        this.disease = disease;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getApprovedAt() {
+        return approvedAt;
+    }
+
+    public void setApprovedAt(LocalDateTime approvedAt) {
+        this.approvedAt = approvedAt;
     }
 }

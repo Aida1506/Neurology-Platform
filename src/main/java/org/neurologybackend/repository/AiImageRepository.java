@@ -8,4 +8,5 @@ import java.util.List;
 
 @Repository
 public interface AiImageRepository extends JpaRepository<AiImage, Long> {
+    List<AiImage> findByPatientUsername(String username);
 }

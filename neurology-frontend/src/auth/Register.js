@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 function Register() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const [role, setRole] = useState("PACIENT");
     const [message, setMessage] = useState("");
 
     const handleRegister = async () => {
@@ -13,11 +12,13 @@ function Register() {
             const res = await axios.post("http://localhost:8080/api/auth/register", {
                 username,
                 password,
-                role,
+                role: "PATIENT",
             });
+
             setMessage(res.data.message || "User registered successfully");
             setUsername("");
             setPassword("");
+
         } catch (err) {
             console.error(err);
             setMessage(err.response?.data?.message || "Registration failed");
@@ -53,16 +54,6 @@ function Register() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full p-3 mb-4 rounded-lg border border-gray-300 focus:border-teal-400 focus:ring-2 focus:ring-teal-300 outline-none"
                 />
-
-                {/* Role select */}
-                <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="w-full p-3 mb-4 rounded-lg border border-gray-300 focus:border-teal-400 focus:ring-2 focus:ring-teal-300 outline-none"
-                >
-                    <option value="PACIENT">Pacient</option>
-                    <option value="MEDIC">Medic</option>
-                </select>
 
                 {/* Register button */}
                 <button

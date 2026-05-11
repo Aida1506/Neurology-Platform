@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 
 function AiPage() {
+    const storedUser = localStorage.getItem("user");
+    const user = storedUser ? JSON.parse(storedUser) : null;
     const [file, setFile] = useState(null);
     const [preview, setPreview] = useState(null);
     const [result, setResult] = useState(null);
@@ -27,7 +29,7 @@ function AiPage() {
             setLoading(true);
 
             const response = await axios.post(
-                "http://localhost:8080/api/dashboard/ai/predict",
+                `http://localhost:8080/api/patient/ai/predict/${user.username}`,
                 formData,
                 {
                     headers: {
@@ -59,7 +61,7 @@ function AiPage() {
             setLoading(true);
 
             const response = await axios.post(
-                "http://localhost:8080/api/dashboard/ai/gradcam",
+                "http://localhost:8080/api/patient/ai/gradcam",
                 formData
             );
 

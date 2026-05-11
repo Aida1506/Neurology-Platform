@@ -10,7 +10,7 @@ function SymptomsPanel({ username }) {
         const fetchSymptoms = async () => {
             try {
                 const res = await axios.get(
-                    `http://localhost:8080/api/dashboard/symptoms/${username}`
+                    `http://localhost:8080/api/patient/symptoms/${username}`
                 );
                 setSymptoms(res.data);
             } catch (err) {
@@ -25,7 +25,7 @@ function SymptomsPanel({ username }) {
 
         try {
             const res = await axios.post(
-                "http://localhost:8080/api/dashboard/symptoms/add",
+                "http://localhost:8080/api/patient/symptoms/add",
                 {
                     username,
                     symptom: newSymptom,

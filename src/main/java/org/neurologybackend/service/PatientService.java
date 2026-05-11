@@ -8,12 +8,12 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
-public class DashboardService {
+public class PatientService {
 
     private final SymptomRepository symptomRepository;
     private final ChatMessageRepository chatMessageRepository;
 
-    public DashboardService(
+    public PatientService(
             SymptomRepository symptomRepository,
             ChatMessageRepository chatMessageRepository) {
         this.symptomRepository = symptomRepository;

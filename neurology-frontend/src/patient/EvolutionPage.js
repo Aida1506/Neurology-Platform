@@ -28,7 +28,7 @@ function EvolutionPage() {
     }, []);
 
     useEffect(() => {
-        axios.get("http://localhost:8080/api/dashboard/ai/history")
+        axios.get(`http://localhost:8080/api/patient/ai/history/${user.username}`)
             .then(res => {
 
                 setImages(res.data);
@@ -187,7 +187,7 @@ function EvolutionPage() {
                                 <div key={img.id} className="border rounded-xl p-3">
 
                                     <img
-                                        src={`http://localhost:8080/api/dashboard/ai/image/${img.id}`}
+                                        src={`http://localhost:8080/api/patient/ai/image/${img.id}`}
                                         className="rounded mb-2"
                                     />
 

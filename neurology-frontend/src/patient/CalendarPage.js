@@ -28,7 +28,7 @@ function CalendarPage() {
     // 🔹 load appointments
     useEffect(() => {
         axios
-            .get(`http://localhost:8080/api/dashboard/appointments/${user.username}`)
+            .get(`http://localhost:8080/api/patient/appointments/${user.username}`)
             .then(res => setAppointments(res.data));
     }, []);
 
@@ -39,7 +39,7 @@ function CalendarPage() {
             return;
         }
 
-        await axios.post("http://localhost:8080/api/dashboard/appointments", {
+        await axios.post("http://localhost:8080/api/patient/appointments", {
             ...form,
             patientUsername: user.username
         });
