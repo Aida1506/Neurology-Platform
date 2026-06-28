@@ -11,5 +11,10 @@ import java.util.List;
 
 @Repository
 public interface SymptomRepository extends JpaRepository<Symptom, Long>, JpaRepositoryImplementation<Symptom, Long> {
+
     List<Symptom> findByUsernameAndDate(String username, LocalDate date);
+
+    List<Symptom> findByUsername(String username);
+
+    List<Symptom> findByAssignedDoctorId(Long doctorId);
 }

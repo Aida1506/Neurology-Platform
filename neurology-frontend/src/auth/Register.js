@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 function Register() {
     const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
 
@@ -11,68 +12,79 @@ function Register() {
         try {
             const res = await axios.post("http://localhost:8080/api/auth/register", {
                 username,
+                email,
                 password,
-                role: "PATIENT",
+                role: "PACIENT",
             });
 
-            setMessage(res.data.message || "User registered successfully");
+            setMessage(res.data.message || "Utilizator inregistrat cu succes");
             setUsername("");
+            setEmail("");
             setPassword("");
 
         } catch (err) {
             console.error(err);
-            setMessage(err.response?.data?.message || "Registration failed");
+            setMessage(err.response?.data?.message || "Inregistrarea a esuat");
         }
     };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-teal-300 to-blue-200 flex items-center justify-center p-6">
 
-            {/* Card alb */}
+            
             <div className="bg-white rounded-xl shadow-lg p-10 w-full max-w-2xl">
 
-                {/* Logo / Title */}
+                
                 <h1 className="text-5xl font-extrabold text-teal-600 mb-8 text-center font-sans">
-                    Register
+                    Creeaza cont
                 </h1>
 
 
-                {/* Username */}
+                
                 <input
                     type="text"
-                    placeholder="Username"
+                    placeholder="Nume de utilizator"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="w-full p-3 mb-4 rounded-lg border border-gray-300 focus:border-teal-400 focus:ring-2 focus:ring-teal-300 outline-none"
                 />
 
-                {/* Password */}
+                
+                <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full p-3 mb-4 rounded-lg border border-gray-300 focus:border-teal-400 focus:ring-2 focus:ring-teal-300 outline-none"
+                />
+
+                
                 <input
                     type="password"
-                    placeholder="Password"
+                    placeholder="Parola"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full p-3 mb-4 rounded-lg border border-gray-300 focus:border-teal-400 focus:ring-2 focus:ring-teal-300 outline-none"
                 />
 
-                {/* Register button */}
+                
                 <button
                     onClick={handleRegister}
                     className="w-full p-3 mb-4 bg-gradient-to-br from-teal-300 to-teal-400 text-white font-bold rounded-lg hover:from-teal-400 hover:to-teal-500 transform hover:scale-105 transition"
                 >
-                    Register
+                    Inregistreaza-te
                 </button>
 
-                {/* Message */}
+                
                 {message && (
                     <p className="text-red-600 font-semibold mb-4 text-center">{message}</p>
                 )}
 
-                {/* Login link */}
+                
                 <p className="text-sm text-center">
-                    Already have an account?{" "}
+                    Ai deja cont?{" "}
                     <Link to="/login" className="text-teal-500 underline font-bold">
-                        Login here
+                        Autentifica-te aici
                     </Link>
                 </p>
             </div>

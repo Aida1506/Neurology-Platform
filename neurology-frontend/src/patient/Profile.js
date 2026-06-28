@@ -3,12 +3,14 @@ import {
     FiHome,
     FiBarChart2,
     FiCalendar,
+    FiMessageCircle,
     FiSettings
 } from "react-icons/fi";
 
 import axios from "axios";
 
 import PacientProfileSymptoms from "./PatientProfileSymptoms";
+import InfoTour from "../components/InfoTour";
 
 function Profile() {
 
@@ -37,7 +39,35 @@ function Profile() {
 
     const [uploadedImages, setUploadedImages] = useState([]);
 
-    // LIVE CLOCK
+    const [appointments, setAppointments] = useState([]);
+
+    const upcomingAppointments = appointments
+        .filter(appointment => new Date(appointment.dateTime).getTime() >= currentTime.getTime())
+        .sort((left, right) => new Date(left.dateTime) - new Date(right.dateTime));
+    const tourSteps = [
+        {
+            title: "RMN-uri incarcate",
+            description: "Primul cadran arata cate imagini RMN ai incarcat in aplicatie."
+        },
+        {
+            title: "Simptome azi",
+            description: "In cadranul de simptome poti scrie natural ce simti, iar aplicatia salveaza simptomul pentru medic."
+        },
+        {
+            title: "Programari",
+            description: "Cadranul de programari arata doar programarile viitoare si le coloreaza dupa cat de aproape sunt."
+        },
+        {
+            title: "Analiza RMN",
+            description: "In zona AI alegi medicul, incarci imaginea RMN si o trimiti pentru analiza. Rezultatul devine vizibil dupa validarea medicului."
+        }
+    ];
+
+    const [doctors, setDoctors] = useState([]);
+
+    const [selectedDoctor, setSelectedDoctor] =
+        useState("");
+
     useEffect(() => {
 
         const interval =
@@ -48,7 +78,15 @@ function Profile() {
 
     }, []);
 
-    // LOAD IMAGES
+    useEffect(() => {
+
+        axios
+            .get("http://localhost:8080/api/doctors")
+            .then(res => setDoctors(res.data))
+            .catch(err => console.error(err));
+
+    }, []);
+
     useEffect(() => {
 
         if (!user) return;
@@ -59,19 +97,42 @@ function Profile() {
             .then(res => {
 
                 setUploadedImages(res.data);
+                if (res.data.length > 0) {
+                    setLatestStatus(latestAnalysisStatus(res.data));
+                }
 
             })
             .catch(err => console.error(err));
 
     }, [user]);
 
-    // UPLOAD HANDLER
+    useEffect(() => {
+
+        if (!user) return;
+
+        axios.get(
+            `http://localhost:8080/api/patient/appointments/${user.username}`
+        )
+            .then(res => setAppointments(res.data))
+            .catch(err => console.error(err));
+
+    }, [user]);
+
     const handleUpload = async () => {
 
         if (!selectedFile) {
 
             setUploadMessage(
-                "Please select an image."
+                "Te rog selecteaza o imagine."
+            );
+
+            return;
+        }
+
+        if (!selectedDoctor) {
+
+            setUploadMessage(
+                "Te rog selecteaza un medic."
             );
 
             return;
@@ -84,6 +145,11 @@ function Profile() {
             const formData = new FormData();
 
             formData.append("file", selectedFile);
+
+            formData.append(
+                "doctorId",
+                selectedDoctor
+            );
 
             await axios.post(
                 `http://localhost:8080/api/patient/ai/predict/${user.username}`,
@@ -98,22 +164,22 @@ function Profile() {
             setLatestStatus("PENDING");
 
             setUploadMessage(
-                "Image uploaded successfully. Awaiting doctor validation."
+                "Imaginea a fost incarcata cu succes. Asteapta validarea medicului."
             );
 
-            // refresh images
             const updated = await axios.get(
                 `http://localhost:8080/api/patient/ai/history/${user.username}`
             );
 
             setUploadedImages(updated.data);
+            setLatestStatus(latestAnalysisStatus(updated.data));
 
         } catch (err) {
 
             console.error(err);
 
             setUploadMessage(
-                "Upload failed."
+                uploadErrorMessage(err)
             );
 
         } finally {
@@ -125,10 +191,10 @@ function Profile() {
 
     return (
 
-        <div className="min-h-screen flex font-sans bg-gray-100">
+        <div className="min-h-screen flex font-sans bg-gradient-to-br from-teal-50 via-white to-blue-50">
 
-            {/* SIDEBAR */}
-            <aside className="w-64 h-screen sticky top-0 bg-blue-300 p-6 flex flex-col justify-between rounded-tr-3xl rounded-br-3xl shadow-lg">
+            
+            <aside className="w-64 h-screen sticky top-0 bg-gradient-to-b from-teal-400 to-blue-300 p-6 flex flex-col justify-between rounded-tr-3xl rounded-br-3xl shadow-lg">
 
                 <h1 className="text-3xl font-bold text-white mb-8 text-center">
                     Cerebra
@@ -136,16 +202,16 @@ function Profile() {
 
                 <nav className="flex flex-col gap-4">
 
-                    <button className="flex items-center gap-3 py-3 px-4 rounded-xl bg-blue-500 text-white font-medium">
+                    <button className="flex items-center gap-3 py-3 px-4 rounded-xl bg-teal-600 shadow text-white font-medium">
                         <FiHome size={20} />
-                        Dashboard
+                        Panou pacient
                     </button>
 
                     <button
                         onClick={() =>
                             window.location.href = "/evolution"
                         }
-                        className="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-blue-400 transition text-white font-medium"
+                        className="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-teal-500/70 transition text-white font-medium"
                     >
                         <FiBarChart2 size={20} />
                         Evoluție
@@ -155,13 +221,28 @@ function Profile() {
                         onClick={() =>
                             window.location.href = "/calendar"
                         }
-                        className="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-blue-400 transition text-white font-medium"
+                        className="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-teal-500/70 transition text-white font-medium"
                     >
                         <FiCalendar size={20} />
                         Calendar
                     </button>
 
-                    <button className="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-blue-400 transition text-white font-medium">
+                    <button
+                        onClick={() =>
+                            window.location.href = "/chatbot"
+                        }
+                        className="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-teal-500/70 transition text-white font-medium"
+                    >
+                        <FiMessageCircle size={20} />
+                        Chatbot
+                    </button>
+
+                    <button
+                        onClick={() =>
+                            window.location.href = "/settings"
+                        }
+                        className="flex items-center gap-3 py-3 px-4 rounded-xl hover:bg-teal-500/70 transition text-white font-medium"
+                    >
                         <FiSettings size={20} />
                         Setări
                     </button>
@@ -169,56 +250,30 @@ function Profile() {
                 </nav>
             </aside>
 
-            {/* MAIN */}
+            
             <main className="flex-1 h-screen overflow-y-auto p-6 flex flex-col gap-6">
-
-                {/* HEADER */}
-                <div className="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl shadow-lg p-6 text-white flex justify-between items-center">
-
+                
+                <div className="bg-gradient-to-r from-teal-400 to-blue-300 rounded-2xl shadow-lg p-6 text-white flex justify-between items-center">
                     <div>
-
                         <h3 className="text-xl font-bold">
-                            Bun venit în Cerebra
+                            Panou pacient
                         </h3>
-
-                        <p className="text-sm opacity-90">
-                            Monitorizează evoluția și starea neurologică
-                        </p>
-
                     </div>
-
-                    <div className="text-right">
-
-                        <h2 className="text-lg font-semibold">
-                            {user?.username}
-                        </h2>
-
-                        <p className="text-sm opacity-80">
-                            {currentTime.toLocaleDateString()}
-                            {" | "}
-                            {currentTime.toLocaleTimeString()}
-                        </p>
-
-                    </div>
-
+                    <InfoTour steps={tourSteps} />
                 </div>
 
-                {/* TOP ROW */}
+                
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-                    <div className="bg-white rounded-2xl shadow p-6 flex flex-col items-center">
+                    <div className="bg-white rounded-2xl shadow p-6 flex flex-col items-center border border-teal-100">
 
                         <p className="text-sm text-gray-500 mb-2">
-                            Stare neurologică
+                            RMN-uri incarcate
                         </p>
 
-                        <h3 className="text-4xl font-bold text-blue-600">
-                            72%
+                        <h3 className="text-5xl font-extrabold text-teal-600">
+                            {uploadedImages.length}
                         </h3>
-
-                        <p className="text-sm text-green-600 mt-2">
-                            Stabilă
-                        </p>
 
                     </div>
 
@@ -226,34 +281,120 @@ function Profile() {
                         username={user?.username}
                     />
 
-                </div>
+                    <div className="bg-white rounded-2xl shadow p-6 border border-teal-100">
 
-                {/* AI SECTION */}
-                <div className="grid grid-cols-1 gap-6">
+                        <div className="flex items-start justify-between gap-3 mb-4">
 
-                    {/* AI CARD */}
-                    <div className="bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl shadow-lg p-6 text-white flex flex-col gap-5">
+                            <div>
+                                <p className="text-sm text-gray-500">
+                                    Programarile tale
+                                </p>
+                                <h3 className="text-lg font-bold text-gray-800">
+                                    Calendar medical
+                                </h3>
+                            </div>
 
-                        <div>
-
-                            <h3 className="text-2xl font-bold mb-2">
-                                AI Medical Imaging Analysis
-                            </h3>
-
-                            <p className="text-sm opacity-90 leading-relaxed">
-                                Încarcă imagini RMN/CT pentru analiză neurologică asistată de AI.
-                                Rezultatele sunt validate de medic înainte de afișare.
-                            </p>
+                            <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">
+                                {upcomingAppointments.length}
+                            </span>
 
                         </div>
 
-                        {/* upload */}
-                        <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm flex flex-col gap-4">
+                        <div className="space-y-3 max-h-52 overflow-y-auto pr-1">
+
+                            {upcomingAppointments.length === 0 && (
+                                <div className="rounded-xl border border-dashed border-teal-200 bg-teal-50/50 p-4 text-center text-sm text-gray-500">
+                                    Nu ai programari viitoare momentan.
+                                </div>
+                            )}
+
+                            {upcomingAppointments
+                                .slice(0, 4)
+                                .map(appointment => {
+                                    const urgency = appointmentUrgency(appointment.dateTime, currentTime);
+
+                                    return (
+                                        <div
+                                            key={appointment.id}
+                                            className={`rounded-xl border p-3 ${urgency.containerClass}`}
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <p className="text-sm font-semibold text-gray-800">
+                                                        Dr. {appointment.doctor?.fullName || "Medic"}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {formatAppointmentDate(appointment.dateTime)}
+                                                    </p>
+                                                </div>
+                                                <span className={`rounded-full px-2 py-1 text-[11px] font-semibold ${urgency.badgeClass}`}>
+                                                    {urgency.label}
+                                                </span>
+                                            </div>
+
+                                            {appointment.reason && (
+                                                <p className="mt-2 text-xs text-gray-600">
+                                                    {appointment.reason}
+                                                </p>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                
+                <div className="grid grid-cols-1 gap-6">
+
+                    
+                    <div className="bg-gradient-to-r from-teal-400 to-blue-300 rounded-2xl shadow-lg p-6 text-white flex flex-col gap-5">
+
+                        
+                        <div className="bg-white/15 rounded-2xl p-5 backdrop-blur-sm flex flex-col gap-4 border border-white/20">
 
                             <div className="flex flex-col gap-2">
 
                                 <label className="text-sm font-semibold">
-                                    Upload MRI / CT Image
+                                    Selecteaza medicul
+                                </label>
+
+                                <select
+                                    value={selectedDoctor}
+                                    onChange={(e) =>
+                                        setSelectedDoctor(
+                                            e.target.value
+                                        )
+                                    }
+                                    className="bg-white text-black rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-teal-200"
+                                >
+
+                                    <option value="">
+                                        Selecteaza medic
+                                    </option>
+
+                                    {doctors.map(d => (
+
+                                        <option
+                                            key={d.id}
+                                            value={d.id}
+                                        >
+                                            {d.fullName} - {d.specialization}
+                                        </option>
+
+                                    ))}
+
+                                </select>
+
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+
+                                <label className="text-sm font-semibold">
+                                    Incarca imagine RMN / CT
                                 </label>
 
                                 <input
@@ -263,7 +404,7 @@ function Profile() {
                                             e.target.files[0]
                                         )
                                     }
-                                    className="bg-white text-black rounded-xl p-2"
+                                    className="bg-white text-black rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-teal-200"
                                 />
 
                             </div>
@@ -271,16 +412,16 @@ function Profile() {
                             <button
                                 onClick={handleUpload}
                                 disabled={loading}
-                                className="bg-white text-purple-600 py-3 rounded-xl font-bold hover:scale-105 transition disabled:opacity-50"
+                                className="bg-white text-teal-700 py-3 rounded-xl font-bold hover:bg-teal-50 hover:scale-105 transition disabled:opacity-50"
                             >
                                 {loading
-                                    ? "Uploading..."
-                                    : "Upload for AI Analysis"}
+                                    ? "Se incarca..."
+                                    : "Incarca pentru analiza AI"}
                             </button>
 
                             {uploadMessage && (
 
-                                <div className="bg-white/20 rounded-xl p-3">
+                                <div className="bg-white/25 rounded-xl p-3 border border-white/20">
 
                                     <p className="text-sm">
                                         {uploadMessage}
@@ -289,18 +430,18 @@ function Profile() {
                                 </div>
                             )}
 
-                            {/* STATUS */}
+                            
                             <div className="bg-white/10 rounded-2xl p-4">
 
                                 <p className="text-sm mb-2 font-semibold">
-                                    Latest Analysis Status
+                                    Statusul ultimei analize
                                 </p>
 
                                 {latestStatus === "PENDING" && (
                                     <div className="bg-yellow-400/20 border border-yellow-300 rounded-xl px-4 py-3">
 
                                         <p className="font-semibold text-yellow-100">
-                                            ⏳ Pending Doctor Review
+                                            In asteptarea verificarii medicului
                                         </p>
 
                                     </div>
@@ -310,7 +451,7 @@ function Profile() {
                                     <div className="bg-green-400/20 border border-green-300 rounded-xl px-4 py-3">
 
                                         <p className="font-semibold text-green-100">
-                                            ✅ Approved by Doctor
+                                            Aprobat de medic
                                         </p>
 
                                     </div>
@@ -320,7 +461,7 @@ function Profile() {
                                     <div className="bg-red-400/20 border border-red-300 rounded-xl px-4 py-3">
 
                                         <p className="font-semibold text-red-100">
-                                            ❌ Rejected by Doctor
+                                            Respins de medic
                                         </p>
 
                                     </div>
@@ -332,116 +473,7 @@ function Profile() {
 
                     </div>
 
-                    {/* UPLOADED IMAGES */}
-                    <div className="bg-white rounded-2xl shadow p-6 flex flex-col">
-
-                        <div className="flex items-center justify-between mb-4">
-
-                            <h3 className="text-xl font-bold text-gray-800">
-                                Uploaded MRI Analyses
-                            </h3>
-
-                            <span className="text-sm text-gray-500">
-                                {uploadedImages.length} scans
-                            </span>
-
-                        </div>
-
-                        <div className="h-[320px] overflow-y-auto pr-2 flex flex-col gap-4 snap-y snap-mandatory">
-
-                            {uploadedImages.length === 0 && (
-
-                                <div className="bg-gray-50 rounded-xl p-6 text-center">
-
-                                    <p className="text-gray-500">
-                                        No uploaded scans yet.
-                                    </p>
-
-                                </div>
-                            )}
-
-                            {uploadedImages.map(img => {
-
-                                let status = "PENDING";
-
-                                if (img.approved) status = "APPROVED";
-
-                                if (img.rejected) status = "REJECTED";
-
-                                return (
-
-                                    <div
-                                        key={img.id}
-                                        className="border rounded-2xl p-4 flex gap-4 items-center min-h-[220px] snap-start bg-white"
-                                    >
-
-                                        {/* image */}
-                                        <img
-                                            src={`http://localhost:8080/api/patient/ai/image/${img.id}`}
-                                            alt="MRI"
-                                            className="w-40 h-40 object-cover rounded-2xl shadow"
-                                        />
-
-                                        {/* info */}
-                                        <div className="flex-1">
-
-                                            <p className="font-semibold text-gray-800">
-                                                {img.filename}
-                                            </p>
-
-                                            <p className="text-xs text-gray-400 mt-1">
-                                                {new Date(img.createdAt).toLocaleString()}
-                                            </p>
-
-                                            {/* status */}
-                                            <div className="mt-3">
-
-                                                {status === "PENDING" && (
-                                                    <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-semibold">
-                                                        ⏳ Pending Review
-                                                    </span>
-                                                )}
-
-                                                {status === "APPROVED" && (
-                                                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
-                                                        ✅ Approved
-                                                    </span>
-                                                )}
-
-                                                {status === "REJECTED" && (
-                                                    <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold">
-                                                        ❌ Rejected
-                                                    </span>
-                                                )}
-
-                                            </div>
-
-                                            {/* doctor comment */}
-                                            {img.doctorComment && (
-
-                                                <div className="mt-3 bg-blue-50 rounded-xl p-2">
-
-                                                    <p className="text-xs text-gray-500">
-                                                        Doctor Comment
-                                                    </p>
-
-                                                    <p className="text-sm">
-                                                        {img.doctorComment}
-                                                    </p>
-
-                                                </div>
-                                            )}
-
-                                        </div>
-
-                                    </div>
-                                );
-                            })}
-
-                        </div>
-
-                    </div>
-
+                    
                 </div>
 
             </main>
@@ -450,4 +482,113 @@ function Profile() {
     );
 }
 
+function uploadErrorMessage(err) {
+    const data = err?.response?.data;
+    const fallback = "Imaginea selectata nu este valida pentru analiza RMN. Te rog incarca o imagine RMN clara.";
+
+    if (typeof data === "string" && data.trim()) {
+        return patientImageErrorMessage(data, fallback);
+    }
+
+    if (data?.message) {
+        return patientImageErrorMessage(data.message, fallback);
+    }
+
+    if (data?.detail) {
+        return patientImageErrorMessage(data.detail, fallback);
+    }
+
+    return fallback;
+}
+
+function patientImageErrorMessage(message, fallback) {
+    const normalized = String(message || "").toLowerCase();
+
+    if (
+        normalized.includes("imagine invalida")
+        || normalized.includes("fisier invalid")
+        || normalized.includes("ai service failed")
+        || normalized.includes("bad request")
+    ) {
+        return fallback;
+    }
+
+    return message;
+}
+
+function latestAnalysisStatus(images) {
+    if (!images || images.length === 0) {
+        return "PENDING";
+    }
+
+    const latest = [...images].sort((left, right) => {
+        const leftTime = new Date(left.createdAt || 0).getTime();
+        const rightTime = new Date(right.createdAt || 0).getTime();
+        return rightTime - leftTime;
+    })[0];
+
+    return normalizeAnalysisStatus(latest);
+}
+
+function normalizeAnalysisStatus(image) {
+    if (!image) {
+        return "PENDING";
+    }
+
+    if (image.rejected) {
+        return "REJECTED";
+    }
+
+    if (image.approved) {
+        return "APPROVED";
+    }
+
+    const status = String(image.validationStatus || "").toUpperCase();
+
+    if (status === "APPROVED" || status === "REJECTED") {
+        return status;
+    }
+
+    return "PENDING";
+}
+
+function appointmentUrgency(dateTime, now) {
+    const appointmentDate = new Date(dateTime);
+    const diffMs = appointmentDate.getTime() - now.getTime();
+    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+    if (diffDays <= 1) {
+        return {
+            label: "foarte curand",
+            containerClass: "border-red-200 bg-red-50",
+            badgeClass: "bg-red-100 text-red-700"
+        };
+    }
+
+    if (diffDays <= 7) {
+        return {
+            label: "apropiata",
+            containerClass: "border-yellow-200 bg-yellow-50",
+            badgeClass: "bg-yellow-100 text-yellow-700"
+        };
+    }
+
+    return {
+        label: "in viitor",
+        containerClass: "border-green-200 bg-green-50",
+        badgeClass: "bg-green-100 text-green-700"
+    };
+}
+
+function formatAppointmentDate(dateTime) {
+    if (!dateTime) {
+        return "Data necunoscuta";
+    }
+
+    return new Date(dateTime).toLocaleString();
+}
+
 export default Profile;
+
+
+

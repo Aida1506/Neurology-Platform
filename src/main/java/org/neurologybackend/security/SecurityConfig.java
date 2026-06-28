@@ -10,40 +10,43 @@ import org.springframework.web.cors.*;
 
 import java.util.List;
 
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+
 @Configuration
 public class SecurityConfig {
 
-    private final JwtFilter jwtFilter;
-
-    public SecurityConfig(JwtFilter jwtFilter) {
-        this.jwtFilter = jwtFilter;
-    }
-
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        public SecurityFilterChain filterChain(HttpSecurity http, JwtFilter jwtFilter)
+            throws Exception {
 
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors ->
+                        cors.configurationSource(
+                                corsConfigurationSource()
+                        )
+                )
+
                 .csrf(csrf -> csrf.disable())
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
 
-                .sessionManagement(sm ->
-                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authorizeHttpRequests(auth -> auth
-
-                        .requestMatchers("/api/auth/**").permitAll()
-
-                        .requestMatchers("/api/dashboard/ai/**").permitAll()
-
-                        .requestMatchers("/api/**").permitAll()
-
+                        .requestMatchers(HttpMethod.OPTIONS).permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/logout").permitAll()
+                        .requestMatchers("/api/settings/forgot-password", "/api/settings/reset-password").permitAll()
                         .anyRequest().authenticated()
                 )
-
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .deleteCookies("AUTH-TOKEN")
+                        .logoutSuccessHandler((request, response, authentication) -> response.setStatus(HttpStatus.OK.value()))
+                        .permitAll()
+                );
 
         return http.build();
     }
@@ -51,27 +54,42 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration = new CorsConfiguration();
+        CorsConfiguration configuration =
+                new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(
+                List.of("http://localhost:3000")
+        );
 
-        configuration.setAllowedMethods(List.of(
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "OPTIONS"
-        ));
+        configuration.setAllowedMethods(
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "OPTIONS"
+                )
+        );
 
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedHeaders(
+                List.of("*")
+        );
 
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration(
+                "/**",
+                configuration
+        );
 
         return source;
+    }
+
+    @Bean
+    public org.springframework.security.crypto.password.PasswordEncoder passwordEncoder() {
+        return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
     }
 }

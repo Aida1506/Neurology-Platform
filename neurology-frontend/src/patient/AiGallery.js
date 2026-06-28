@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import InfoTour from "../components/InfoTour";
 
 function AiGallery() {
 
@@ -10,6 +11,24 @@ function AiGallery() {
     const user = storedUser
         ? JSON.parse(storedUser)
         : null;
+    const tourSteps = [
+        {
+            title: "Lista RMN-urilor",
+            description: "Aici vezi imaginile RMN incarcate si statusul fiecarei analize."
+        },
+        {
+            title: "Statusul analizei",
+            description: "In asteptare inseamna ca medicul nu a validat inca. Aprobat afiseaza rezultatul, iar Respins marcheaza o analiza respinsa."
+        },
+        {
+            title: "Rezultat si incredere",
+            description: "Pentru RMN-urile aprobate vezi clasa prezisa de AI si procentul de incredere."
+        },
+        {
+            title: "Comentariul medicului",
+            description: "Daca medicul a adaugat un comentariu la validare, acesta apare in cardul imaginii."
+        }
+    ];
 
     useEffect(() => {
 
@@ -29,22 +48,20 @@ function AiGallery() {
 
     return (
 
-        <div className="min-h-screen bg-gray-100 p-10">
-
-            <h1 className="text-4xl font-bold mb-8 text-purple-600">
-                🧠 Medical Imaging History
-            </h1>
+        <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50 p-10">
+            <div className="mb-8 flex items-center gap-3">
+                <h1 className="text-4xl font-bold text-teal-600">
+                    Istoric imagistica medicala
+                </h1>
+                <InfoTour steps={tourSteps} />
+            </div>
 
             {images.length === 0 && (
 
-                <div className="bg-white rounded-2xl shadow p-8 text-center">
+                <div className="bg-white rounded-2xl shadow p-8 text-center border border-teal-100">
 
                     <p className="text-gray-500 text-lg">
-                        No approved analyses yet.
-                    </p>
-
-                    <p className="text-sm text-gray-400 mt-2">
-                        Uploaded scans will appear after doctor validation.
+                        Nu exista inca analize aprobate.
                     </p>
 
                 </div>
@@ -69,63 +86,63 @@ function AiGallery() {
 
                         <div
                             key={img.id}
-                            className="bg-white rounded-2xl shadow p-4"
+                            className="bg-white rounded-2xl shadow p-4 border border-teal-100"
                         >
 
-                            {/* image */}
+                            
                             <img
                                 src={`http://localhost:8080/api/patient/ai/image/${img.id}`}
-                                alt="MRI"
+                                alt="RMN"
                                 className="rounded-xl mb-4 h-56 w-full object-cover"
                             />
 
-                            {/* filename */}
+                            
                             <p className="text-sm font-semibold mb-1">
                                 {img.filename}
                             </p>
 
-                            {/* date */}
+                            
                             <p className="text-xs text-gray-400 mb-3">
                                 {new Date(img.createdAt).toLocaleString()}
                             </p>
 
-                            {/* status */}
+                            
                             <div className="mb-3">
 
                                 {img.approved && (
                                     <span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full">
-                                        APPROVED
+                                        APROBAT
                                     </span>
                                 )}
 
                                 {img.rejected && (
                                     <span className="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full">
-                                        REJECTED
+                                        RESPINS
                                     </span>
                                 )}
 
                                 {!img.approved && !img.rejected && (
                                     <span className="bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full">
-                                        PENDING REVIEW
+                                        IN ASTEPTAREA VERIFICARII
                                     </span>
                                 )}
 
                             </div>
 
-                            {/* result */}
+                            
                             {img.approved && result && (
 
                                 <div className="bg-gray-50 rounded-xl p-3 text-sm">
 
                                     <p className="font-semibold">
-                                        Disease:
-                                        <span className="text-purple-600 ml-2">
-                                            {result.class}
+                                        Afectiune:
+                                        <span className="text-teal-600 ml-2">
+                                            {diseaseLabel(result.class)}
                                         </span>
                                     </p>
 
                                     <p className="mt-2">
-                                        Confidence:
+                                        Incredere:
                                         <span className="ml-2 font-semibold">
                                             {(result.confidence * 100).toFixed(2)}%
                                         </span>
@@ -134,23 +151,23 @@ function AiGallery() {
                                 </div>
                             )}
 
-                            {/* pending */}
+                            
                             {!img.approved && !img.rejected && (
 
                                 <div className="bg-yellow-50 rounded-xl p-3 text-sm text-yellow-700">
 
-                                    Awaiting doctor validation.
+                                    In asteptarea validarii medicului.
 
                                 </div>
                             )}
 
-                            {/* doctor comment */}
+                            
                             {img.doctorComment && (
 
-                                <div className="mt-3 bg-blue-50 rounded-xl p-3">
+                                <div className="mt-3 bg-teal-50 rounded-xl p-3">
 
                                     <p className="text-xs text-gray-500 mb-1">
-                                        Doctor Comment
+                                        Comentariul medicului
                                     </p>
 
                                     <p className="text-sm">
@@ -169,3 +186,28 @@ function AiGallery() {
 }
 
 export default AiGallery;
+
+function diseaseLabel(value) {
+    if (!value) {
+        return "Necunoscut";
+    }
+
+    if (value.includes("Non")) {
+        return "Fara dementa";
+    }
+
+    if (value.includes("VeryMild")) {
+        return "Dementa foarte usoara";
+    }
+
+    if (value.includes("Mild")) {
+        return "Dementa usoara";
+    }
+
+    if (value.includes("Moderate")) {
+        return "Dementa moderata";
+    }
+
+    return value;
+}
+

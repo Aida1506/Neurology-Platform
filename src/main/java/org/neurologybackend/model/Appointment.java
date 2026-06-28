@@ -13,15 +13,19 @@ public class Appointment {
 
     private String patientUsername;
 
-    private String doctorName;
+    @ManyToOne
+    private Doctor doctor;
 
     private LocalDateTime dateTime;
 
     private String reason;
 
-    private String status; // PENDING / APPROVED
+    private String status;
 
-    // 🔹 GETTERS
+    @ManyToOne
+    @JoinColumn(name = "availability_id")
+    private DoctorAvailability availability;
+
 
     public Long getId() {
         return id;
@@ -31,8 +35,8 @@ public class Appointment {
         return patientUsername;
     }
 
-    public String getDoctorName() {
-        return doctorName;
+    public Doctor getDoctor() {
+        return doctor;
     }
 
     public LocalDateTime getDateTime() {
@@ -47,7 +51,10 @@ public class Appointment {
         return status;
     }
 
-    // 🔹 SETTERS
+    public DoctorAvailability getAvailability() {
+        return availability;
+    }
+
 
     public void setId(Long id) {
         this.id = id;
@@ -57,8 +64,8 @@ public class Appointment {
         this.patientUsername = patientUsername;
     }
 
-    public void setDoctorName(String doctorName) {
-        this.doctorName = doctorName;
+    public void setDoctor(Doctor doctor) {
+        this.doctor = doctor;
     }
 
     public void setDateTime(LocalDateTime dateTime) {
@@ -71,5 +78,9 @@ public class Appointment {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public void setAvailability(DoctorAvailability availability) {
+        this.availability = availability;
     }
 }

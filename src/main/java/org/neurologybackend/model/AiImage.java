@@ -1,6 +1,7 @@
 package org.neurologybackend.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 
@@ -17,19 +18,23 @@ public class AiImage {
     private User patient;
 
     @ManyToOne
-    private User doctor;
+    @JoinColumn(name = "doctor_id")
+    private Doctor doctor;
 
     @Lob
     private String resultJson;
 
     @Lob
     @Column(columnDefinition = "LONGBLOB")
+    @JsonIgnore
     private byte[] imageData;
 
     private boolean approved;
 
     private boolean rejected;
 
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String doctorComment;
 
     private Double confidence;
@@ -40,7 +45,8 @@ public class AiImage {
 
     private LocalDateTime approvedAt;
 
-    // GETTERS & SETTERS
+    private String validationStatus;
+
 
     public Long getId() {
         return id;
@@ -66,11 +72,11 @@ public class AiImage {
         this.patient = patient;
     }
 
-    public User getDoctor() {
+    public Doctor getDoctor() {
         return doctor;
     }
 
-    public void setDoctor(User doctor) {
+    public void setDoctor(Doctor doctor) {
         this.doctor = doctor;
     }
 
@@ -144,5 +150,17 @@ public class AiImage {
 
     public void setApprovedAt(LocalDateTime approvedAt) {
         this.approvedAt = approvedAt;
+    }
+
+    public String getValidationStatus() {
+        return validationStatus;
+    }
+
+    public void setValidationStatus(String validationStatus) {
+        this.validationStatus = validationStatus;
+    }
+
+    public String getPatientUsername() {
+        return patient != null ? patient.getUsername() : null;
     }
 }
